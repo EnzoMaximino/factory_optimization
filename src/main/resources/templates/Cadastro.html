@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt" xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Cadastro</title>
+    <link rel="stylesheet" href="css/Cadastro.css">
+</head>
+<body>
+<div class="container">
+    <div class="formulario">
+        <div class="conteudo-formulario">
+            <form th:action="@{/cadastro}" th:object="${user}" method="post" class="formulario-visivel">
+                <h2>Cadastro</h2>
+                <h1>Crie sua conta</h1>
+                <div th:if="${mensagemErro}" class="erro">
+                    <p th:text="${mensagemErro}"></p>
+                </div>
+                <input type="text" th:field="*{username}" placeholder="Usuário"   required  oninvalid="this.setCustomValidity('Por favor, insira apenas letras e espaços.')" oninput="this.setCustomValidity('')">
+                <input type="email" th:field="*{email}" placeholder="Email" required>
+                <input type="password" th:field="*{password}" placeholder="Senha"  required oninvalid="this.setCustomValidity('Por favor, insira apenas caracteres válidos.')" oninput="this.setCustomValidity('')">
+
+                <div class="login-button">
+                    <button type="submit">Cadastrar</button>
+                </div>
+            </form>
+
+            <p>Já tem conta?</p>
+            <a th:href="@{/}">
+                <button type="button">Voltar para Login</button>
+            </a>
+        </div>
+    </div>
+</div>
+</body>
+</html>

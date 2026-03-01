@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt" xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Tela Inicial</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="css/Login.css">
+</head>
+<body>
+<div class="container">
+    <div class="formulario">
+        <div class="conteudo-formulario">
+            <!-- Formulário correto -->
+            <form th:action="@{/}" method="post" class="formulario-visivel">
+                <h2>Login</h2>
+                <h1>Bem-vindo!</h1>
+                <div th:if="${mensagemErro}" class="erro">
+                    <p th:text="${mensagemErro}"></p>
+                </div>
+                <input type="text"  name="username" placeholder="Usuário" required  oninvalid="this.setCustomValidity('Por favor, insira apenas caracteres válidos.')" oninput="this.setCustomValidity('')">
+                <input type="password"  name="password" placeholder="Senha" required oninvalid="this.setCustomValidity('Por favor, insira apenas caracteres válidos.')" oninput="this.setCustomValidity('')">
+                <div class="login-button">
+                    <button type="submit">Entrar</button>
+                </div>
+
+            </form>
+
+            <p>Não tem cadastro?</p>
+            <a th:href="@{/cadastro}">
+                <button type="button">Criar um cadastro</button>
+            </a>
+        </div>
+    </div>
+</div>
+</body>
+</html>
