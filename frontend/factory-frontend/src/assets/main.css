@@ -1,0 +1,147 @@
+/* RESET */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* BASE */
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background-color: #eef2f7; /* fundo mais vivo */
+  color: #291313;
+}
+
+/* LAYOUT */
+.app-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* SIDEBAR */
+.sidebar {
+  width: 250px;
+  background: #1e293b; /* azul escuro elegante */
+  padding: 28px 20px;
+  color: white;
+}
+
+.sidebar h1 {
+  margin-bottom: 35px;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+/* LINKS */
+.nav-link {
+  display: block;
+  padding: 12px;
+  margin-bottom: 10px;
+  text-decoration: none;
+  color: #cbd5e1;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.nav-link:hover {
+  background-color: rgba(255,255,255,0.08);
+  color: white;
+}
+
+.router-link-exact-active {
+  background-color: #2563eb;
+  color: white;
+}
+
+/* MAIN */
+.main-content {
+  flex: 1;
+  padding: 40px;
+  background: linear-gradient(
+    135deg,
+    #1e3a8a 0%,
+    #2563eb 40%,
+    #38bdf8 100%
+  );
+}
+
+/* CARD */
+.card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(4px);
+  padding: 32px;
+  border-radius: 16px;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+}
+
+/* TÍTULO */
+.page-title {
+  font-size: 26px;
+  font-weight: 600;
+  margin-bottom: 25px;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  color: #291313;
+}
+
+/* STATS */
+.stats-container {
+  display: flex;
+  gap: 20px;
+}
+
+.stat-box {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 24px;
+  border-radius: 14px;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.stat-box:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+}
+
+.stat-box h3 {
+  font-size: 16px;
+  margin-bottom: 8px;
+  color: #465263;
+}
+
+.stat-box p {
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.production-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+}
+
+.success-btn {
+  background-color: #16a34a;
+  color: white;
+  padding: 10px 18px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.success-btn:hover {
+  background-color: #15803d;
+}
+
+.success-btn:disabled {
+  background-color: #94a3b8;
+  cursor: not-allowed;
+}

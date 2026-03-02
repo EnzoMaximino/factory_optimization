@@ -8,6 +8,9 @@ out/
 build/
 !gradle/wrapper/gradle-wrapper.jar
 
+# Frontend
+frontend/factory-frontend/node_modules/
+frontend/factory-frontend/dist/
 # Logs
 *.log
 
