@@ -41,7 +41,7 @@ public class MaterialServices{
 
         Unit unit = material.getUnit();
 
-        int normalizedQuantity = unit.toBase(material.getQuantity());
+        double normalizedQuantity = unit.toBase(material.getQuantity());
 
         material.setQuantity(normalizedQuantity);
         material.setUnit(unit.getBaseUnit());

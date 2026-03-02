@@ -1,6 +1,8 @@
 package com.example.demo.services;
 
+import com.example.demo.dto.CompositionDTO;
 import com.example.demo.dto.ProductCreateDTO;
+import com.example.demo.dto.ProductResponseDTO;
 import com.example.demo.model.Material;
 import com.example.demo.model.Product;
 import com.example.demo.model.ProductMaterial;
@@ -15,55 +17,92 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class ProductsServices{
+public class ProductsServices {
 
     private final ProductRepository repository;
     private final MaterialRepository materialRepository;
 
     public Product create(ProductCreateDTO dto) {
 
+        if (repository.existsByName(dto.name())) {
+            throw new RuntimeException("Product name already exists");
+        }
+
         Product product = new Product();
         product.setName(dto.name());
         product.setValue(dto.value());
 
-        List<ProductMaterial> composition = dto.composition()
-                .stream()
-                .map(c -> {
+        for (CompositionDTO item : dto.composition()) {
 
-                    Material material = materialRepository
-                            .findById(c.materialId())
-                            .orElseThrow(() ->
-                                    new RuntimeException("Material not found"));
+            Material material = materialRepository
+                    .findById(item.materialId())
+                    .orElseThrow(() ->
+                            new RuntimeException("Material not found"));
 
-                    ProductMaterial pm = new ProductMaterial();
-                    pm.setProduct(product);
-                    pm.setMaterial(material);
-                    pm.setQuantity(c.quantity());
+            ProductMaterial pm = new ProductMaterial();
+            pm.setProduct(product);
+            pm.setMaterial(material);
+            pm.setQuantity(item.quantity());
 
-                    return pm;
-                })
-                .toList();
-
-        product.setComposition(composition);
+            product.getComposition().add(pm);
+        }
 
         return repository.save(product);
     }
 
-    public Product update(Long id, Product updated) {
-        Product existing = repository.findById(id)
+
+    public Product update(Long id, ProductCreateDTO dto) {
+
+        Product product = repository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
 
-        existing.setName(updated.getName());
-        existing.setValue(updated.getValue());
-        existing.setComposition(updated.getComposition());
+        if (repository.existsByNameAndIdNot(dto.name(), id)) {
+            throw new RuntimeException("Product name already exists");
+        }
 
-        return repository.save(existing);
+        product.setName(dto.name());
+        product.setValue(dto.value());
+
+        product.getComposition().clear();
+
+
+        repository.flush();
+
+        for (CompositionDTO item : dto.composition()) {
+
+            Material material = materialRepository.findById(item.materialId())
+                    .orElseThrow(() -> new RuntimeException("Material not found"));
+
+            ProductMaterial pm = new ProductMaterial();
+            pm.setProduct(product);
+            pm.setMaterial(material);
+            pm.setQuantity(item.quantity());
+
+            product.getComposition().add(pm);
+        }
+
+        return repository.save(product);
     }
 
-    public List<Product> findAll() {
-        return repository.findAll();
-    }
     public Page<Product> findAll(Pageable pageable) {
         return repository.findAll(pageable);
+    }
+
+    public void delete(Long id) {
+
+        Product product = repository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+
+        repository.delete(product);
+    }
+
+    public List<ProductResponseDTO> filterByMaterial(String materialName) {
+
+        List<Product> products =
+                repository.findByMaterialNameContaining(materialName);
+
+        return products.stream()
+                .map(ProductResponseDTO::fromEntity)
+                .toList();
     }
 }

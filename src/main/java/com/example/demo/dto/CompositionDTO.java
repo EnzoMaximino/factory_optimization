@@ -9,5 +9,5 @@ public record CompositionDTO(
 
         @NotNull(message = "Quantity is required")
         @Positive(message = "Quantity must be positive")
-        Integer quantity
+        double quantity
 ) {}

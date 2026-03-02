@@ -8,7 +8,7 @@ public enum Unit {
     MILLILITER(1, UnitType.VOLUME),
     LITER(1000, UnitType.VOLUME);
 
-    private final int baseMultiplier;
+    private final double baseMultiplier;
     private final UnitType type;
 
     Unit(int baseMultiplier, UnitType type) {
@@ -16,7 +16,7 @@ public enum Unit {
         this.type = type;
     }
 
-    public int toBase(int value) {
+    public double toBase(double value) {
         return value * baseMultiplier;
     }
 

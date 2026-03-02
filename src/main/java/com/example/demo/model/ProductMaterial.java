@@ -29,5 +29,5 @@ public class ProductMaterial {
     @JoinColumn(name = "material_id")
     private Material material;
 
-    private Integer quantity;
+    private double quantity;
 }

@@ -1,12 +1,12 @@
 package com.example.demo.services;
 
 import com.example.demo.dto.ProductionPlanDTO;
-import com.example.demo.dto.ProductionSuggestionDTO;
 import com.example.demo.model.Material;
 import com.example.demo.model.Product;
 import com.example.demo.model.ProductMaterial;
 import com.example.demo.repository.MaterialRepository;
 import com.example.demo.repository.ProductRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -21,95 +21,158 @@ public class ProductionService {
 
     public List<ProductionPlanDTO> calculateBestProductionPlan() {
 
-        Map<Long, Integer> stock = loadMaterialStock();
-        List<Product> remainingProducts =
-                new ArrayList<>(productRepository.findAll());
+        Map<Long, Double> stock = loadMaterialStock();
+        List<Product> products = productRepository.findAll();
 
-        List<ProductionPlanDTO> result = new ArrayList<>();
+        Map<Product, Integer> productionCount = new HashMap<>();
 
-        while (!remainingProducts.isEmpty()) {
+        while (true) {
 
             Product bestProduct = null;
-            int bestUnits = 0;
-            double bestValue = 0;
+            double bestEfficiency = 0;
 
-            for (Product product : remainingProducts) {
+            for (Product product : products) {
 
-                int maxUnits = calculateMaxUnits(product, stock);
+                if (!canProduce(product, stock)) continue;
 
-                double potentialValue = maxUnits * product.getValue();
+                double efficiency = calculateEfficiency(product, stock);
 
-                if (potentialValue > bestValue) {
-                    bestValue = potentialValue;
-                    bestUnits = maxUnits;
+                if (efficiency > bestEfficiency) {
+                    bestEfficiency = efficiency;
                     bestProduct = product;
                 }
             }
 
-            if (bestProduct == null || bestUnits == 0) break;
+            if (bestProduct == null) break;
 
-            consumeStock(bestProduct, stock, bestUnits);
+            consumeStock(bestProduct, stock, 1);
 
-            result.add(new ProductionPlanDTO(
-                    bestProduct.getId(),
-                    bestProduct.getName(),
-                    bestProduct.getValue(),
-                    bestUnits,
-                    bestUnits * bestProduct.getValue()
-            ));
-
-            remainingProducts.remove(bestProduct);
+            productionCount.put(
+                    bestProduct,
+                    productionCount.getOrDefault(bestProduct, 0) + 1
+            );
         }
 
-        return result;
+        return buildResult(productionCount);
     }
 
-    private Map<Long, Integer> loadMaterialStock() {
-        Map<Long, Integer> stock = new HashMap<>();
-
+    private Map<Long, Double> loadMaterialStock() {
+        Map<Long, Double> stock = new HashMap<>();
         for (Material material : materialRepository.findAll()) {
             stock.put(material.getId(), material.getQuantity());
         }
-
         return stock;
     }
 
-    private int calculateMaxUnits(Product product,
-                                  Map<Long, Integer> stock) {
-
-        int maxUnits = Integer.MAX_VALUE;
+    private boolean canProduce(Product product, Map<Long, Double> stock) {
 
         for (ProductMaterial pm : product.getComposition()) {
 
-            int available = stock.getOrDefault(
+            double available = stock.getOrDefault(
                     pm.getMaterial().getId(),
-                    0
+                    0.0
             );
 
-            int possible = available / pm.getQuantity();
-
-            maxUnits = Math.min(maxUnits, possible);
-
-            if (maxUnits == 0) break;
+            if (available < pm.getQuantity()) {
+                return false;
+            }
         }
 
-        return maxUnits == Integer.MAX_VALUE ? 0 : maxUnits;
+        return true;
+    }
+
+    private double calculateEfficiency(Product product,
+                                       Map<Long, Double> stock) {
+
+        double maxImpact = 0;
+
+        for (ProductMaterial pm : product.getComposition()) {
+
+            double totalStock = stock.getOrDefault(
+                    pm.getMaterial().getId(),
+                    0.0
+            );
+
+            if (totalStock == 0) return 0;
+
+            double impact = pm.getQuantity() / totalStock;
+
+            maxImpact = Math.max(maxImpact, impact);
+        }
+
+        if (maxImpact == 0) return 0;
+
+        return product.getValue() / maxImpact;
     }
 
     private void consumeStock(Product product,
-                              Map<Long, Integer> stock,
+                              Map<Long, Double> stock,
                               int units) {
 
         for (ProductMaterial pm : product.getComposition()) {
 
             Long materialId = pm.getMaterial().getId();
-
-            int consumed = pm.getQuantity() * units;
+            double consumed = pm.getQuantity() * units;
 
             stock.put(
                     materialId,
                     stock.get(materialId) - consumed
             );
         }
+    }
+
+    private List<ProductionPlanDTO> buildResult(
+            Map<Product, Integer> productionCount) {
+
+        List<ProductionPlanDTO> result = new ArrayList<>();
+
+        for (Map.Entry<Product, Integer> entry : productionCount.entrySet()) {
+
+            Product product = entry.getKey();
+            int units = entry.getValue();
+
+            result.add(new ProductionPlanDTO(
+                    product.getId(),
+                    product.getName(),
+                    product.getValue(),
+                    units,
+                    units * product.getValue()
+            ));
+        }
+
+        result.sort(Comparator.comparing(ProductionPlanDTO::totalValue)
+                .reversed());
+
+        return result;
+    }
+
+    @Transactional
+    public List<ProductionPlanDTO> executeBestProductionPlan() {
+
+        List<ProductionPlanDTO> plan = calculateBestProductionPlan();
+
+        for (ProductionPlanDTO item : plan) {
+
+            Product product = productRepository
+                    .findById(item.productId())
+                    .orElseThrow();
+
+            int units = item.unitsProduced();
+
+            for (ProductMaterial pm : product.getComposition()) {
+
+                Material material = pm.getMaterial();
+
+                double consumed = pm.getQuantity() * units;
+
+                material.setQuantity(
+                        material.getQuantity() - consumed
+                );
+
+                materialRepository.save(material);
+            }
+        }
+
+        return plan;
     }
 }

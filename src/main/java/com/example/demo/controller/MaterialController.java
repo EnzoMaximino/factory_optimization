@@ -2,6 +2,7 @@ package com.example.demo.controller;
 
 import com.example.demo.model.Material;
 import com.example.demo.services.MaterialServices;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -10,13 +11,12 @@ import java.util.List;
 @RestController
 @RequestMapping("/materials")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 public class MaterialController {
 
     private final MaterialServices materialServices;
 
     @PostMapping
-    public Material create(@RequestBody Material material) {
+    public Material create(@Valid @RequestBody Material material) {
         return materialServices.create(material);
     }
 

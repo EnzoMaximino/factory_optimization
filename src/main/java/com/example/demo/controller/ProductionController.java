@@ -17,7 +17,13 @@ public class ProductionController {
     private final ProductionService productionService;
 
     @GetMapping("/plan")
-    public List<ProductionPlanDTO> getProductionPlan() {
+    public List<ProductionPlanDTO> getBestPlan() {
         return productionService.calculateBestProductionPlan();
     }
+
+    @PostMapping("/execute")
+    public List<ProductionPlanDTO> executePlan() {
+        return productionService.executeBestProductionPlan();
+    }
+
 }
